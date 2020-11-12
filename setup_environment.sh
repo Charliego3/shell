@@ -91,6 +91,14 @@ function install_zsh() {
 	fi
 }
 
+function mkdirs() {
+	# shellcheck disable=SC2206
+	local dirs=($2)
+	for key in "${dirs[@]}"; do
+		dir_mk "$1/$key"
+	done
+}
+
 checkOS
 echo "
 export LC_ALL=en_US.UTF-8
@@ -122,8 +130,10 @@ fi
 # dev dir
 dev_dir="$HOME/dev"
 dirs=("bin" "environment" "go" "java")
-for key in "${dirs[@]}"; do
-	dir_mk "$dev_dir/$key"
-done
+mkdirs "$dev_dir" "${dirs[*]}"
 
 #install_zsh
+
+config_dir="${HOME}/.config"
+sub_config_dirs=("nvim" "zsh")
+mkdirs "$config_dir" "${sub_config_dirs[*]}"
