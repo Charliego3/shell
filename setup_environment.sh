@@ -86,6 +86,7 @@ function install_zsh() {
 				sudo $linuxAction install zsh
 			fi
 		else
+			# setting
 			chsh -s "$(command -v zsh)"
 		fi
 	fi
@@ -99,32 +100,30 @@ function mkdirs() {
 	done
 }
 
+function brewInstall() {
+	$(command -v brew) install "$1"
+}
+
 checkOS
-echo "
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8" >>"$HOME/.bashrc"
-# shellcheck source="${HOME}/.bashrc"
-source "${HOME}/.bashrc"
+#echo "
+#export LC_ALL=en_US.UTF-8
+#export LANG=en_US.UTF-8" >> "$HOME/.bashrc"
+## shellcheck source="${HOME}/.bashrc"
+#source "${HOME}/.bashrc"
 
 # check git is installed
-if ! command_exists git; then
-	if [[ ! $isMacOS ]]; then
-		sudo $linuxAction install -y git
-	fi
+if ! $isMacOS && ! command_exists git; then
+	sudo $linuxAction install -y git
 fi
 
 # check curl is installed
-if ! command_exists curl; then
-	if [[ ! $isMacOS ]]; then
-		sudo $linuxAction install -y curl
-	fi
+if ! $isMacOS && ! command_exists curl; then
+	sudo $linuxAction install -y curl
 fi
 
 # install brew
 if ! command_exists brew; then
 	$bashPath -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-else
-	echo -e "${Yellow}brew is exists$Reset"
 fi
 
 # dev dir
