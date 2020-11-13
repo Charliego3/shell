@@ -49,7 +49,6 @@ function checkOS() {
 	local linux='Linux'
 	os=$(uname -a)
 	if [[ $os =~ $macOS ]]; then
-		echo $macOS
 		isMacOS=true
 	elif [[ $os =~ $linux ]]; then
 		echo "GNU/Linux操作系统"
@@ -101,7 +100,13 @@ function mkdirs() {
 }
 
 function brewInstall() {
-	$(command -v brew) install "$1"
+	echo "BrewInstall:" "$1"
+	# shellcheck disable=SC2206
+	local formulas=($1)
+	bi=$(command -v brew)
+	for formula in "${formulas[@]}" ; do
+	    $bi install "$formula"
+	done
 }
 
 checkOS
@@ -131,8 +136,10 @@ dev_dir="$HOME/dev"
 dirs=("bin" "environment" "go" "java")
 mkdirs "$dev_dir" "${dirs[*]}"
 
-#install_zsh
-
 config_dir="${HOME}/.config"
 sub_config_dirs=("nvim" "zsh")
 mkdirs "$config_dir" "${sub_config_dirs[*]}"
+
+# start install program
+needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq")
+brewInstall "${needInstall[*]}"
