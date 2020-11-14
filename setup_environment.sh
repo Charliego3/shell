@@ -24,17 +24,63 @@ BrightMagenta="${Bold}95m"
 BrightCyan="${Bold}96m"
 BrightWhite="${Bold}97m"
 
+echo "Test Colors Start"
+echo -e "${Black}Color: Black${Reset}"
+echo -e "${Red}Color: Red${Reset}"
+echo -e "${Green}Color: Green${Reset}"
+echo -e "${Yellow}Color: Yellow${Reset}"
+echo -e "${Blue}Color: Blue${Reset}"
+echo -e "${Magenta}Color: Magenta${Reset}"
+echo -e "${Cyan}Color: Cyan${Reset}"
+echo -e "${White}Color: White${Reset}"
+echo -e "${BrightBlack_Gray}Color: BrightBlack_Gray${Reset}"
+echo -e "${BrightRed}Color: BrightRed${Reset}"
+echo -e "${BrightGreen}Color: BrightGreen${Reset}"
+echo -e "${BrightYellow}Color: BrightYellow${Reset}"
+echo -e "${BrightBlue}Color: BrightBlue${Reset}"
+echo -e "${BrightMagenta}Color: BrightMagenta${Reset}"
+echo -e "${BrightCyan}Color: BrightCyan${Reset}"
+echo -e "${BrightWhite}Color: BrightWhite${Reset}"
+echo "Test Colors End"
+
+. envrc.sh
+
 isMacOS=false
 isLinuxApt=false
 linuxAction=""
 bashPath=$(command -v bash)
+ZSHRC=$PROMPT
+NVIM_RC=""
+ZSH_ALIAS=""
+
+# shellcheck disable=SC2154
+function append() {
+	var=$1
+	newLine=$3
+	value=""
+	if [[ $newLine == "true" ]]; then
+		value="${!var}\n\n$2"
+	else
+		value="${!var}\n$2"
+	fi
+	echo -e "$value"
+}
+
+function warnEcho() {
+	echo -e "⚠️  ${Yellow}$1${Reset}"
+}
+
+function beerEcho() {
+	echo -e "🍻 $1${Reset}"
+}
 
 # check dir is exists then mkdir "$1"
 function dir_mk() {
 	if [[ ! -e $1 || ! -d $1 ]]; then
 		mkdir -p "$1"
+		beerEcho "${Green}$1 is created"
 	else
-		echo "$1 is exists"
+		warnEcho "$1 is exists"
 	fi
 }
 
@@ -72,25 +118,21 @@ function checkOS() {
 	fi
 }
 
-# check zsh or install
-function install_zsh() {
-	if [[ $isMacOS ]]; then
-		brew install zsh
-	elif [[ ${SHELL##/*/} != "zsh" ]]; then
-		if command_exists zsh; then
-			echo -e -n "${Cyan}Do you like to use zsh? ${White}(y/N)${Reset}"
-			read -rp " " like
-			if [[ $like == "y" || $like == "" ]]; then
-				echo "Like zsh"
-				sudo $linuxAction install zsh
-			fi
-		else
-			# setting
-			chsh -s "$(command -v zsh)"
-		fi
-	fi
+function ask() {
+	echo -e -n "❓ ${Magenta}$1 ${White}(y/N) ${BrightBlack_Gray}[default: y]${Reset} "
+	read -r ans
+	answer "$ans"
 }
 
+# answer for ask, use $? == 1 to compare
+function answer() {
+	if [[ ! $1 == "y" && ! $1 == "Y" && ! $1 == "" ]]; then
+		return 0
+	fi
+	return 1
+}
+
+# create the dir loop
 function mkdirs() {
 	# shellcheck disable=SC2206
 	local dirs=($2)
@@ -100,21 +142,15 @@ function mkdirs() {
 }
 
 function brewInstall() {
-	echo "BrewInstall:" "$1"
 	# shellcheck disable=SC2206
 	local formulas=($1)
 	bi=$(command -v brew)
-	for formula in "${formulas[@]}" ; do
-	    $bi install "$formula"
+	for formula in "${formulas[@]}"; do
+		$bi install --display-times "$formula"
 	done
 }
 
 checkOS
-#echo "
-#export LC_ALL=en_US.UTF-8
-#export LANG=en_US.UTF-8" >> "$HOME/.bashrc"
-## shellcheck source="${HOME}/.bashrc"
-#source "${HOME}/.bashrc"
 
 # check git is installed
 if ! $isMacOS && ! command_exists git; then
@@ -129,6 +165,11 @@ fi
 # install brew
 if ! command_exists brew; then
 	$bashPath -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	ask "Do you want to not update homebrew every time in the future?"
+	if [[ $? == 1 ]]; then
+		# set `export HOMEBREW_NO_AUTO_UPDATE=0` to `.zshrc` or `.bashrc` profile
+		echo "answer yes"
+	fi
 fi
 
 # dev dir
@@ -142,4 +183,34 @@ mkdirs "$config_dir" "${sub_config_dirs[*]}"
 
 # start install program
 needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq")
+# do not update homebrew for this times
+export HOMEBREW_NO_AUTO_UPDATE=0
+
 brewInstall "${needInstall[*]}"
+brewInstall go
+brewInstall lazygit
+brewInstall nvim
+# setting zsh to default shell
+#chsh -s "$(command -v zsh)"
+
+# ZSH_ALIAS: $HOME/.config/zsh/zsh-alias.zsh
+if command_exists vim; then
+	ZSH_ALIAS=$(append ZSH_ALIAS "alias vim='$(command -v vim)'")
+fi
+ZSH_ALIAS=$(append ZSH_ALIAS "alias vi='$(command -v nvim)'")
+ZSH_ALIAS=$(append ZSH_ALIAS "alias rm='trash'")
+ZSH_ALIAS=$(append ZSH_ALIAS "alias c='clear'")
+echo "$ZSH_ALIAS" #> "$HOME"/.config/zsh/zsh-alias.zsh
+
+# VIMRC: $HOME/.config/nvim/init.vim
+NVIM_RC=$(append NVIM_RC "$NVIM_BASIC")
+echo "$NVIM_RC" #> "$HOME"/.config/nvim/init.vim
+
+# end of .zshrc
+ZSHRC=$(append ZSHRC "$LANG" true)
+ZSHRC=$(append ZSHRC "$USER_BIN" true)
+ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-alias.zsh" true)
+#ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-source.zsh")
+
+# $HOME/.zshrc
+echo "$ZSHRC" #> "$HOME"/.zshrc
