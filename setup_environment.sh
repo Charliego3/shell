@@ -57,13 +57,16 @@ ZSH_ALIAS=""
 function append() {
 	var=$1
 	newLine=$3
-	value=""
-	if [[ $newLine == "true" ]]; then
-		value="${!var}\n\n$2"
+	oldValue=${!var}
+	newValue=""
+	if [[ $oldValue == "" ]]; then
+		newValue="$2"
+	elif [[ $newLine == "true" ]]; then
+		newValue="${oldValue}\n\n$2"
 	else
-		value="${!var}\n$2"
+		newValue="${oldValue}\n$2"
 	fi
-	echo -e "$value"
+	echo -e "$newValue"
 }
 
 function warnEcho() {
@@ -71,14 +74,14 @@ function warnEcho() {
 }
 
 function beerEcho() {
-	echo -e "🍻 $1${Reset}"
+	echo -e "🍻 ${Green}$1${Reset}"
 }
 
 # check dir is exists then mkdir "$1"
 function dir_mk() {
 	if [[ ! -e $1 || ! -d $1 ]]; then
 		mkdir -p "$1"
-		beerEcho "${Green}$1 is created"
+		beerEcho "$1 is created"
 	else
 		warnEcho "$1 is exists"
 	fi
@@ -144,9 +147,14 @@ function mkdirs() {
 function brewInstall() {
 	# shellcheck disable=SC2206
 	local formulas=($1)
+	local isCask=$2
 	bi=$(command -v brew)
 	for formula in "${formulas[@]}"; do
-		$bi install --display-times "$formula"
+		if [[ $isCask == true ]]; then
+			$bi install --display-times cask "$formula"
+		else
+			$bi install --display-times "$formula"
+		fi
 	done
 }
 
@@ -167,14 +175,15 @@ if ! command_exists brew; then
 	$bashPath -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 	ask "Do you want to not update homebrew every time in the future?"
 	if [[ $? == 1 ]]; then
-		# set `export HOMEBREW_NO_AUTO_UPDATE=0` to `.zshrc` or `.bashrc` profile
-		echo "answer yes"
+		# set `export HOMEBREW_NO_AUTO_UPDATE=0` to `.zshrc` AND `.bashrc` profile
+		echo "export HOMEBREW_NO_AUTO_UPDATE=0" >> "$HOME"/.bash_profile
+		ZSHRC=$(append ZSHRC "# 设置homebrew执行时不自动更新\nexport HOMEBREW_NO_AUTO_UPDATE=0")
 	fi
 fi
 
 # dev dir
 dev_dir="$HOME/dev"
-dirs=("bin" "environment" "go" "java")
+dirs=("bin" "environment" "go" "java" ".config")
 mkdirs "$dev_dir" "${dirs[*]}"
 
 config_dir="${HOME}/.config"
@@ -182,35 +191,39 @@ sub_config_dirs=("nvim" "zsh")
 mkdirs "$config_dir" "${sub_config_dirs[*]}"
 
 # start install program
-needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq")
+needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim")
 # do not update homebrew for this times
 export HOMEBREW_NO_AUTO_UPDATE=0
 
 brewInstall "${needInstall[*]}"
-brewInstall go
-brewInstall lazygit
-brewInstall nvim
+brewInstall iina true
 # setting zsh to default shell
 #chsh -s "$(command -v zsh)"
 
 # ZSH_ALIAS: $HOME/.config/zsh/zsh-alias.zsh
+ZSH_ALIAS_PATH="$HOME/.config/zsh/zsh-alias.zsh"
 if command_exists vim; then
 	ZSH_ALIAS=$(append ZSH_ALIAS "alias vim='$(command -v vim)'")
 fi
 ZSH_ALIAS=$(append ZSH_ALIAS "alias vi='$(command -v nvim)'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias rm='trash'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias c='clear'")
-echo "$ZSH_ALIAS" #> "$HOME"/.config/zsh/zsh-alias.zsh
+echo "$ZSH_ALIAS" #> "$ZSH_ALIAS_PATH"
+beerEcho "Successful setting zsh alias: $ZSH_ALIAS_PATH"
 
 # VIMRC: $HOME/.config/nvim/init.vim
+NVIM_RC_PATH="$HOME/.config/nvim/init.vim"
 NVIM_RC=$(append NVIM_RC "$NVIM_BASIC")
-echo "$NVIM_RC" #> "$HOME"/.config/nvim/init.vim
+echo "$NVIM_RC" #> "$NVIM_RC_PATH"
+beerEcho "Successful setting nvim config: $NVIM_RC_PATH"
 
 # end of .zshrc
+ZSHRC_PATH="$HOME/.zshrc"
 ZSHRC=$(append ZSHRC "$LANG" true)
 ZSHRC=$(append ZSHRC "$USER_BIN" true)
-ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-alias.zsh" true)
+ZSHRC=$(append ZSHRC "source $ZSH_ALIAS_PATH" true)
 #ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-source.zsh")
 
 # $HOME/.zshrc
-echo "$ZSHRC" #> "$HOME"/.zshrc
+echo "$ZSHRC" #> "$ZSHRC_PATH"
+beerEcho "Successful setting zshrc: $ZSHRC_PATH"

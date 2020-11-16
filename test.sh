@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+curl -o test.zip --progress-bar -X POST https://content.dropboxapi.com/2/files/download_zip \
+    --header "Authorization: Bearer dMPk_F4dDIMAAAAAAAAAAd7efhypuYUe15W9Yr-QRl8lShEO_UY3MRzRNLaefpul" \
+    --header "Dropbox-API-Arg: {\"path\": \"/Notebooks\"}"
+
+exit 0
+
 content=">>> Calling cluster info
 172.16.100.123:4000: cluster_state:ok
 cluster_slots_assigned:16384
