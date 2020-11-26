@@ -5,7 +5,21 @@
 PROMPT="PROMPT=\"%{\$fg_bold[blue]%}#%{\$reset_color%} %{\$fg_bold[green]%}(%m)%{\$reset_color%} in %{\$fg_bold[magenta]%}%~%{\$reset_color%} %B%F{245}[%D %*]%{\$reset_color%}%(?..%{\$fg_bold[white]%} C:%{\$reset_color%}%{\$fg_bold[red]%}%?%{\$reset_color%}) %B%F{160}%#%{\$reset_color%} \""
 LANG="export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8"
-USER_BIN='export PATH=$PATH:$HOME/dev/bin'
+USER_BIN='export PATH=$PATH:$HOME/dev/bin
+export GOPATH="$HOME/dev/environment/go"
+    
+# ncurses    
+export PATH="/usr/local/opt/ncurses/bin:$PATH"    
+export LDFLAGS="-L/usr/local/opt/ncurses/lib"    
+export CPPFLAGS="-I/usr/local/opt/ncurses/include"'
+
+AUTO_SUGGESTION='# zsh-autosuggestions    
+if type brew &>/dev/null; then    
+    FPATH=$(brew --prefix)/share/zsh-completions:$FPATH    
+    
+    autoload -Uz compinit    
+    compinit    
+fi'
 
 NVIM_BASIC='" 设置主题
 set background=dark

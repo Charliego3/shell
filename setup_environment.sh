@@ -210,15 +210,19 @@ config_dir="${HOME}/.config"
 sub_config_dirs=("nvim" "zsh")
 mkdirs "$config_dir" "${sub_config_dirs[*]}"
 
+if ! command_exists zsh; then 
+	brewInstall zsh
+	# setting zsh to default shell
+	chsh -s "$(command -v zsh)"
+fi
+
 # start install program
-needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping")
+needInstall=("trash" "zsh-syntax-highlighting" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping")
 # do not update homebrew for this times
 export HOMEBREW_NO_AUTO_UPDATE=0
 
 brewInstall "${needInstall[*]}"
-brewInstall iina true
-# setting zsh to default shell
-chsh -s "$(command -v zsh)"
+brewInstall "homebrew/cask/iina" true
 
 ask "Do you want to backup the current config files?" "backup the current files"
 if [[ $? == 1 ]]; then
@@ -247,7 +251,10 @@ beerEcho "Successful setting nvim config: $NVIM_RC_PATH"
 ZSHRC_PATH="$HOME/.zshrc"
 ZSHRC=$(append ZSHRC "$LANG" true)
 ZSHRC=$(append ZSHRC "$USER_BIN" true)
-ZSHRC=$(append ZSHRC "source $ZSH_ALIAS_PATH" true)
+ZSHRC=$(append ZSHRC "source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh" true)
+ZSHRC=$(append ZSHRC "source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh")
+ZSHRC=$(append ZSHRC "source $ZSH_ALIAS_PATH")
+ZSHRC=$(append ZSHRC "$AUTO_SUGGESTION" true)
 #ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-source.zsh")
 
 # $HOME/.zshrc
