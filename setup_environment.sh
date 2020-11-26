@@ -215,10 +215,10 @@ needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "
 # do not update homebrew for this times
 export HOMEBREW_NO_AUTO_UPDATE=0
 
-#brewInstall "${needInstall[*]}"
-#brewInstall iina true
+brewInstall "${needInstall[*]}"
+brewInstall iina true
 # setting zsh to default shell
-#chsh -s "$(command -v zsh)"
+chsh -s "$(command -v zsh)"
 
 ask "Do you want to backup the current config files?" "backup the current files"
 if [[ $? == 1 ]]; then
@@ -234,13 +234,13 @@ fi
 ZSH_ALIAS=$(append ZSH_ALIAS "alias vi='$(command -v nvim)'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias rm='trash'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias c='clear'")
-echo "$ZSH_ALIAS" #> "$ZSH_ALIAS_PATH"
+echo "$ZSH_ALIAS" > "$ZSH_ALIAS_PATH"
 beerEcho "Successful setting zsh alias: $ZSH_ALIAS_PATH"
 
 # VIMRC: $HOME/.config/nvim/init.vim
 NVIM_RC_PATH="$HOME/.config/nvim/init.vim"
 NVIM_RC=$(append NVIM_RC "$NVIM_BASIC")
-echo "$NVIM_RC" #> "$NVIM_RC_PATH"
+echo "$NVIM_RC" > "$NVIM_RC_PATH"
 beerEcho "Successful setting nvim config: $NVIM_RC_PATH"
 
 # end of .zshrc
@@ -251,5 +251,5 @@ ZSHRC=$(append ZSHRC "source $ZSH_ALIAS_PATH" true)
 #ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-source.zsh")
 
 # $HOME/.zshrc
-echo "$ZSHRC" #> "$ZSHRC_PATH"
+echo "$ZSHRC" > "$ZSHRC_PATH"
 beerEcho "Successful setting zshrc: $ZSHRC_PATH"
