@@ -124,14 +124,24 @@ function checkOS() {
 function ask() {
 	echo -e -n "❓ ${Magenta}$1 ${White}(y/N) ${BrightBlack_Gray}[default: y]${Reset} "
 	read -r ans
-	answer "$ans"
+	answer "$ans" "$2"
 }
 
 # answer for ask, use $? == 1 to compare
 function answer() {
+	local chose="$2"
 	if [[ ! $1 == "y" && ! $1 == "Y" && ! $1 == "" ]]; then
+		if [[ $chose == "" ]]; then
+			chose="No"
+		fi
+		warnEcho "You chose don't $chose"
 		return 0
 	fi
+
+	if [[ $chose == "" ]]; then
+		chose="Yes"
+	fi
+	beerEcho "You chose $chose"
 	return 1
 }
 
@@ -165,6 +175,16 @@ if ! $isMacOS && ! command_exists git; then
 	sudo $linuxAction install -y git
 fi
 
+# xcode-select --install command line tools
+if [[ $isMacOS ]]; then
+	xcode-select --install
+	result=$?
+	if [[ $result == 0 ]]; then
+		warnEcho "Waiting for xcode-select command line tools installed, then rerun this script"
+		exit 1
+	fi
+fi
+
 # check curl is installed
 if ! $isMacOS && ! command_exists curl; then
 	sudo $linuxAction install -y curl
@@ -176,7 +196,7 @@ if ! command_exists brew; then
 	ask "Do you want to not update homebrew every time in the future?"
 	if [[ $? == 1 ]]; then
 		# set `export HOMEBREW_NO_AUTO_UPDATE=0` to `.zshrc` AND `.bashrc` profile
-		echo "export HOMEBREW_NO_AUTO_UPDATE=0" >> "$HOME"/.bash_profile
+		echo "export HOMEBREW_NO_AUTO_UPDATE=0" >>"$HOME"/.bash_profile
 		ZSHRC=$(append ZSHRC "# 设置homebrew执行时不自动更新\nexport HOMEBREW_NO_AUTO_UPDATE=0")
 	fi
 fi
@@ -191,14 +211,20 @@ sub_config_dirs=("nvim" "zsh")
 mkdirs "$config_dir" "${sub_config_dirs[*]}"
 
 # start install program
-needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim")
+needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping")
 # do not update homebrew for this times
 export HOMEBREW_NO_AUTO_UPDATE=0
 
-brewInstall "${needInstall[*]}"
-brewInstall iina true
+#brewInstall "${needInstall[*]}"
+#brewInstall iina true
 # setting zsh to default shell
 #chsh -s "$(command -v zsh)"
+
+ask "Do you want to backup the current config files?" "backup the current files"
+if [[ $? == 1 ]]; then
+	echo "Want Backup"
+	exit 0
+fi
 
 # ZSH_ALIAS: $HOME/.config/zsh/zsh-alias.zsh
 ZSH_ALIAS_PATH="$HOME/.config/zsh/zsh-alias.zsh"
