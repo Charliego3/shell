@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 
-#if xcode-select -p &>/dev/null; then
-#    echo 'installed';
-#else
-#    echo 'not install';
-#fi
-#exit 0
+HOMEBREW_CASK_DIR="/usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask"
+if [[ ! -e $HOMEBREW_CASK_DIR || ! -d $HOMEBREW_CASK_DIR ]]; then
+	echo "$HOMEBREW_CASK_DIR 不目录存在"
+fi
+exit 0
 
-# 实现map
+if xcode-select -p &>/dev/null; then
+   echo 'installed';
+else
+   echo 'not install';
+fi
+exit 0
+
+## 实现map
 ARRAY=( "cow:moo"
         "dinosaur:roar"
         "bird:chirp"
@@ -33,7 +39,7 @@ fi
 exit 0
 
 ApplicationPath="/Applications"
-if [[ -e "$HOME/Applications/JetBrains Toolbox/IntelliJ IDEA Ultimate.app" ]]; then
+if [[ -e "$ApplicationPath/IntelliJ IDEA Ultimate.app" ]]; then
 	echo "${ApplicationPath}/IntelliJ IDEA Ultimate.app 存在"
 else
 	echo "${ApplicationPath}/IntelliJ IDEA Ultimate.app 不存在"

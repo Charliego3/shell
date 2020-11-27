@@ -101,13 +101,10 @@ function answer() {
 		if [[ $chose == "" ]]; then
 			chose="No"
 		fi
-		warnEcho "You chose $chose"
+		warnEcho "You chose don't $chose"
 		return 0
 	fi
-
-	if [[ $chose == "" ]]; then
-		chose="Yes"
-	fi
+	
 	beerEcho "You chose $chose"
 	return 1
 }
@@ -148,7 +145,7 @@ fi
 # install brew
 if ! command_exists brew; then
 	$BASH_PATH -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-	$(command -v brew) tap caskroom/cask
+	brew tap homebrew/cask
 	ask "Do you want to not update homebrew every time in the future?"
 	if [[ $? == 1 ]]; then
 		# set `export HOMEBREW_NO_AUTO_UPDATE=0` to `.zshrc` AND `.bashrc` profile
@@ -157,7 +154,13 @@ if ! command_exists brew; then
 	fi
 fi
 
-# dev dir
+# check homebrew/cask
+HOMEBREW_CASK_DIR="/usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask"
+if [[ ! -e $HOMEBREW_CASK_DIR || ! -d $HOMEBREW_CASK_DIR ]]; then
+	brew tap homebrew/cask
+fi
+
+# create dev dir if not exists
 DEV_DIR="$HOME/dev"
 DIRS=("bin" "environment" "go" "java" ".config")
 mkdirs "$DEV_DIR" "${DIRS[*]}"
@@ -177,7 +180,7 @@ if ! command_exists zsh; then
 fi
 
 # start install program
-install=("trash" "zsh-syntax-highlighting" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping" "telnet")
+install=("trash" "zsh-syntax-highlighting" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping" "telnet" "openjdk")
 for formula in "${install[@]}"; do
 	if ! command_exists "$formula"; then
 		brew install --display-times "$formula"
@@ -205,7 +208,7 @@ function caskInstall() {
 		if [[ $FINAL_APP_LOCATION == "" ]]; then
 			brew install cask "$KEY"
 		else
-			if ! ask "Are you want to reinstall $VALUE?" "don't install $VALUE"; then
+			if ! ask "Are you want to reinstall $VALUE?" "install $VALUE"; then
 				trash -vy "$FINAL_APP_LOCATION"
 				KEY_PATH="$(command -v "$KEY")"
 				if [[ "$KEY_PATH" != "" ]]; then
@@ -221,6 +224,7 @@ function caskInstall() {
 NOT_INSTALL_DIC=("cakebrew:Cakebrew.app" "iina:IINA.app")
 caskInstall "${NOT_INSTALL_DIC[*]}"
 
+# TODO intellij-idea:IntelliJ IDEA Ultimate.app 有异常待解决
 RE_INSTALL_DIC=("webstorm:WebStorm.app" "intellij-idea:IntelliJ IDEA Ultimate.app" "goland:GoLand.app" "datagrip:DataGrip.app")
 caskInstall "${RE_INSTALL_DIC[*]}"
 
