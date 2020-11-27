@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-if xcode-select -p &>/dev/null; then
-    echo 'installed';
-else
-    echo 'not install';
-fi
-exit 0
+#if xcode-select -p &>/dev/null; then
+#    echo 'installed';
+#else
+#    echo 'not install';
+#fi
+#exit 0
 
 # 实现map
 ARRAY=( "cow:moo"
@@ -16,10 +16,10 @@ ARRAY=( "cow:moo"
 for animal in "${ARRAY[@]}" ; do
     KEY=${animal%%:*}
     VALUE=${animal#*:}
-    printf "%s likes to %s.\n" "$KEY" "$VALUE"
+    printf "%s = %s\n" "$KEY" "$VALUE"
 done
 
-echo -e "${ARRAY[1]%%:*} is an extinct animal which likes to ${ARRAY[1]#*:}\n"
+echo -e "${ARRAY[1]%%:*} = ${ARRAY[1]#*:}\n"
 exit 0
 
 function foo() {

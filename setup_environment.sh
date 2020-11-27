@@ -220,7 +220,7 @@ function caskInstall() {
 NOT_INSTALL_DIC=("cakebrew:Cakebrew.app" "iina:IINA.app")
 caskInstall "${NOT_INSTALL_DIC[*]}" false
 
-RE_INSTALL_DIC=("webstorm:WebStorm.app" "intellij-idea:IntelliJ IDEA Ultimate.app" "goland:GoLand.app")
+RE_INSTALL_DIC=("webstorm:WebStorm.app" "intellij-idea:IntelliJ IDEA Ultimate.app" "goland:GoLand.app" "datagrip:DataGrip.app")
 caskInstall "${RE_INSTALL_DIC[*]}" true
 
 exit 0
