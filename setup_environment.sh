@@ -207,15 +207,19 @@ config_dir="${HOME}/.config"
 sub_config_dirs=("nvim" "zsh")
 mkdirs "$config_dir" "${sub_config_dirs[*]}"
 
+if ! command_exists zsh; then 
+	brewInstall zsh
+	# setting zsh to default shell
+	chsh -s "$(command -v zsh)"
+fi
+
 # start install program
-needInstall=("zsh" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping")
+needInstall=("trash" "zsh-syntax-highlighting" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping")
 # do not update homebrew for this times
 export HOMEBREW_NO_AUTO_UPDATE=0
 
-#brewInstall "${needInstall[*]}"
-#brewInstall iina true
-# setting zsh to default shell
-#chsh -s "$(command -v zsh)"
+brewInstall "${needInstall[*]}"
+brewInstall "homebrew/cask/iina" true
 
 ask "Do you want to backup the current config files?" "backup the current files"
 if [[ $? == 1 ]]; then
@@ -231,22 +235,25 @@ fi
 ZSH_ALIAS=$(append ZSH_ALIAS "alias vi='$(command -v nvim)'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias rm='trash'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias c='clear'")
-echo "$ZSH_ALIAS" #> "$ZSH_ALIAS_PATH"
+echo "$ZSH_ALIAS" > "$ZSH_ALIAS_PATH"
 beerEcho "Successful setting zsh alias: $ZSH_ALIAS_PATH"
 
 # VIMRC: $HOME/.config/nvim/init.vim
 NVIM_RC_PATH="$HOME/.config/nvim/init.vim"
 NVIM_RC=$(append NVIM_RC "$NVIM_BASIC")
-echo "$NVIM_RC" #> "$NVIM_RC_PATH"
+echo "$NVIM_RC" > "$NVIM_RC_PATH"
 beerEcho "Successful setting nvim config: $NVIM_RC_PATH"
 
 # end of .zshrc
 ZSHRC_PATH="$HOME/.zshrc"
 ZSHRC=$(append ZSHRC "$LANG" true)
 ZSHRC=$(append ZSHRC "$USER_BIN" true)
-ZSHRC=$(append ZSHRC "source $ZSH_ALIAS_PATH" true)
+ZSHRC=$(append ZSHRC "source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh" true)
+ZSHRC=$(append ZSHRC "source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh")
+ZSHRC=$(append ZSHRC "source $ZSH_ALIAS_PATH")
+ZSHRC=$(append ZSHRC "$AUTO_SUGGESTION" true)
 #ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-source.zsh")
 
 # $HOME/.zshrc
-echo "$ZSHRC" #> "$ZSHRC_PATH"
+echo "$ZSHRC" > "$ZSHRC_PATH"
 beerEcho "Successful setting zshrc: $ZSHRC_PATH"
