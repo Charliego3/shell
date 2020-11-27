@@ -1,8 +1,57 @@
 #!/usr/bin/env bash
 
+if xcode-select -p &>/dev/null; then
+    echo 'installed';
+else
+    echo 'not install';
+fi
+exit 0
+
+# 实现map
+ARRAY=( "cow:moo"
+        "dinosaur:roar"
+        "bird:chirp"
+        "bash:rock" )
+
+for animal in "${ARRAY[@]}" ; do
+    KEY=${animal%%:*}
+    VALUE=${animal#*:}
+    printf "%s likes to %s.\n" "$KEY" "$VALUE"
+done
+
+echo -e "${ARRAY[1]%%:*} is an extinct animal which likes to ${ARRAY[1]#*:}\n"
+exit 0
+
+function foo() {
+    return 1
+}
+
+if ! foo
+then
+  echo "Build failed"
+fi
+exit 0
+
+ApplicationPath="/Applications"
+if [[ -e "$HOME/Applications/JetBrains Toolbox/IntelliJ IDEA Ultimate.app" ]]; then
+	echo "${ApplicationPath}/IntelliJ IDEA Ultimate.app 存在"
+else
+	echo "${ApplicationPath}/IntelliJ IDEA Ultimate.app 不存在"
+fi
+
+exit 0
+
+if ! type idea >/dev/null 2>&1; then
+	echo 'intellij-idea 未安装'
+else
+	echo 'intellij-idea 已安装'
+fi
+
+exit 0
+
 curl -o test.zip --progress-bar -X POST https://content.dropboxapi.com/2/files/download_zip \
-    --header "Authorization: Bearer dMPk_F4dDIMAAAAAAAAAAd7efhypuYUe15W9Yr-QRl8lShEO_UY3MRzRNLaefpul" \
-    --header "Dropbox-API-Arg: {\"path\": \"/Notebooks\"}"
+	--header "Authorization: Bearer dMPk_F4dDIMAAAAAAAAAAd7efhypuYUe15W9Yr-QRl8lShEO_UY3MRzRNLaefpul" \
+	--header "Dropbox-API-Arg: {\"path\": \"/Notebooks\"}"
 
 exit 0
 

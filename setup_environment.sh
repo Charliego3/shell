@@ -3,51 +3,21 @@
 # This script is used to initialize a new computer so
 # that it always uses its own specific software and environment
 
-Base="\033["
-Reset="${Base}0m"
-Bold="${Base}1;"
+BASE="\033["
+RESET="${BASE}0m"
+BOLD="${BASE}1;"
 
-Black="${Bold}30m"
-Red="${Bold}31m"
-Green="${Bold}32m"
-Yellow="${Bold}33m"
-Blue="${Bold}34m"
-Magenta="${Bold}35m"
-Cyan="${Bold}36m"
-White="${Bold}37m"
-BrightBlack_Gray="${Bold}90m"
-BrightRed="${Bold}91m"
-BrightGreen="${Bold}92m"
-BrightYellow="${Bold}93m"
-BrightBlue="${Bold}94m"
-BrightMagenta="${Bold}95m"
-BrightCyan="${Bold}96m"
-BrightWhite="${Bold}97m"
-
-echo "Test Colors Start"
-echo -e "${Black}Color: Black${Reset}"
-echo -e "${Red}Color: Red${Reset}"
-echo -e "${Green}Color: Green${Reset}"
-echo -e "${Yellow}Color: Yellow${Reset}"
-echo -e "${Blue}Color: Blue${Reset}"
-echo -e "${Magenta}Color: Magenta${Reset}"
-echo -e "${Cyan}Color: Cyan${Reset}"
-echo -e "${White}Color: White${Reset}"
-echo -e "${BrightBlack_Gray}Color: BrightBlack_Gray${Reset}"
-echo -e "${BrightRed}Color: BrightRed${Reset}"
-echo -e "${BrightGreen}Color: BrightGreen${Reset}"
-echo -e "${BrightYellow}Color: BrightYellow${Reset}"
-echo -e "${BrightBlue}Color: BrightBlue${Reset}"
-echo -e "${BrightMagenta}Color: BrightMagenta${Reset}"
-echo -e "${BrightCyan}Color: BrightCyan${Reset}"
-echo -e "${BrightWhite}Color: BrightWhite${Reset}"
-echo "Test Colors End"
+GREEN="${BOLD}32m"
+YELLOW="${BOLD}33m"
+MAGENTA="${BOLD}35m"
+WHITE="${BOLD}37m"
+BRIGHT_BLACK_GRAY="${BOLD}90m"
 
 . envrc.sh
 
-isMacOS=false
-linuxAction=""
-bashPath=$(command -v bash)
+IS_MAC_OS=false
+LINUX_ACTION=""
+BASH_PATH=$(command -v bash)
 ZSHRC=$PROMPT
 NVIM_RC=""
 ZSH_ALIAS=""
@@ -69,11 +39,11 @@ function append() {
 }
 
 function warnEcho() {
-	echo -e "⚠️  ${Yellow}$1${Reset}"
+	echo -e "⚠️  ${YELLOW}$1${RESET}"
 }
 
 function beerEcho() {
-	echo -e "🍻 ${Green}$1${Reset}"
+	echo -e "🍻 ${GREEN}$1${RESET}"
 }
 
 # check dir is exists then mkdir "$1"
@@ -97,18 +67,18 @@ function checkOS() {
 	local linux='Linux'
 	os=$(uname -a)
 	if [[ $os =~ $macOS ]]; then
-		isMacOS=true
+		IS_MAC_OS=true
 	elif [[ $os =~ $linux ]]; then
 		echo "GNU/Linux操作系统"
 		source /etc/os-release
 		case $ID in
 		debian | ubuntu | devuan)
-			linuxAction="apt-get"
+			LINUX_ACTION="apt-get"
 			;;
 		centos | fedora | rhel)
-			linuxAction="yum"
+			LINUX_ACTION="yum"
 			if test "$(echo "$VERSION_ID >= 22" | bc)" -ne 0; then
-				linuxAction="dnf"
+				LINUX_ACTION="dnf"
 			fi
 			;;
 		*)
@@ -119,7 +89,7 @@ function checkOS() {
 }
 
 function ask() {
-	echo -e -n "❓ ${Magenta}$1 ${White}(y/N) ${BrightBlack_Gray}[default: y]${Reset} "
+	echo -e -n "❓ ${MAGENTA}$1 ${WHITE}(y/N) ${BRIGHT_BLACK_GRAY}[default: y]${RESET} "
 	read -r ans
 	answer "$ans" "$2"
 }
@@ -145,51 +115,40 @@ function answer() {
 # create the dir loop
 function mkdirs() {
 	# shellcheck disable=SC2206
-	local dirs=($2)
-	for key in "${dirs[@]}"; do
+	local DIRS=($2)
+	for key in "${DIRS[@]}"; do
 		dir_mk "$1/$key"
-	done
-}
-
-function brewInstall() {
-	# shellcheck disable=SC2206
-	local formulas=($1)
-	local isCask=$2
-	bi=$(command -v brew)
-	for formula in "${formulas[@]}"; do
-		if [[ $isCask == true ]]; then
-			$bi install --display-times cask "$formula"
-		else
-			$bi install --display-times "$formula"
-		fi
 	done
 }
 
 checkOS
 
 # check git is installed
-if ! $isMacOS && ! command_exists git; then
-	sudo $linuxAction install -y git
+if ! $IS_MAC_OS && ! command_exists git; then
+	sudo $LINUX_ACTION install -y git
 fi
 
 # xcode-select --install command line tools
-if [[ $isMacOS ]]; then
-	xcode-select --install
-	result=$?
-	if [[ $result == 0 ]]; then
-		warnEcho "Waiting for xcode-select command line tools installed, then rerun this script"
-		exit 1
+if [[ $IS_MAC_OS ]]; then
+	if ! xcode-select -p &>/dev/null; then
+		xcode-select --install
+		result=$?
+		if [[ $result == 0 ]]; then
+			warnEcho "Waiting for xcode-select command line tools installed, then rerun this script"
+			exit 1
+		fi
 	fi
 fi
 
 # check curl is installed
-if ! $isMacOS && ! command_exists curl; then
-	sudo $linuxAction install -y curl
+if ! $IS_MAC_OS && ! command_exists curl; then
+	sudo $LINUX_ACTION install -y curl
 fi
 
 # install brew
 if ! command_exists brew; then
-	$bashPath -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	$BASH_PATH -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	$(command -v brew) tap caskroom/cask
 	ask "Do you want to not update homebrew every time in the future?"
 	if [[ $? == 1 ]]; then
 		# set `export HOMEBREW_NO_AUTO_UPDATE=0` to `.zshrc` AND `.bashrc` profile
@@ -199,28 +158,74 @@ if ! command_exists brew; then
 fi
 
 # dev dir
-dev_dir="$HOME/dev"
-dirs=("bin" "environment" "go" "java" ".config")
-mkdirs "$dev_dir" "${dirs[*]}"
+DEV_DIR="$HOME/dev"
+DIRS=("bin" "environment" "go" "java" ".config")
+mkdirs "$DEV_DIR" "${DIRS[*]}"
 
-config_dir="${HOME}/.config"
-sub_config_dirs=("nvim" "zsh")
-mkdirs "$config_dir" "${sub_config_dirs[*]}"
+CONFIG_DIR="${HOME}/.config"
+SUB_CONFIG_DIRS=("nvim" "zsh")
+mkdirs "$CONFIG_DIR" "${SUB_CONFIG_DIRS[*]}"
 
-if ! command_exists zsh; then 
-	brewInstall zsh
+# do not update homebrew for this times
+export HOMEBREW_NO_AUTO_UPDATE=0
+
+# install zsh
+if ! command_exists zsh; then
+	brew install zsh
 	# setting zsh to default shell
 	chsh -s "$(command -v zsh)"
 fi
 
 # start install program
-needInstall=("trash" "zsh-syntax-highlighting" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping")
-# do not update homebrew for this times
-export HOMEBREW_NO_AUTO_UPDATE=0
+install=("trash" "zsh-syntax-highlighting" "zsh-autosuggestions" "zsh-completions" "jq" "go" "lazygit" "nvim" "gping" "telnet")
+for formula in "${install[@]}"; do
+	if ! command_exists "$formula"; then
+		brew install --display-times "$formula"
+	else
+		brew upgrade "$formula"
+	fi
+done
 
-brewInstall "${needInstall[*]}"
-brewInstall "homebrew/cask/iina" true
+LOCAL_APPLICATIONS=("/Applications" "$HOME/Applications" "$HOME/Applications/JetBrains Toolbox")
+function caskInstall() {
+	# shellcheck disable=SC2206
+	local APPLICATIONS=($1)
+	local IS_RE_INSTALL=$2
+	for animal in "${APPLICATIONS[@]}"; do
+		KEY=${animal%%:*}
+		VALUE=${animal#*:}
+		FINAL_APP_LOCATION=""
+		for dir in "${LOCAL_APPLICATIONS[@]}"; do
+			APP_LOCATION="${dir}/${VALUE}"
+			if [[ -e "$APP_LOCATION" ]]; then
+				FINAL_APP_LOCATION=$APP_LOCATION
+				break
+			fi
+		done
 
+		if [[ $FINAL_APP_LOCATION == "" ]]; then
+			brew install cask "$KEY"
+		elif $IS_RE_INSTALL ; then
+			trash -vy "$FINAL_APP_LOCATION"
+			KEY_PATH="$(command -v "$KEY")"
+			if [[ "$KEY_PATH" != "" ]]; then
+				trash -vy "$KEY"
+			fi
+			brew reinstall "$KEY"
+		fi
+	done
+}
+
+# if key is exists then not install
+NOT_INSTALL_DIC=("cakebrew:Cakebrew.app" "iina:IINA.app")
+caskInstall "${NOT_INSTALL_DIC[*]}" false
+
+RE_INSTALL_DIC=("webstorm:WebStorm.app" "intellij-idea:IntelliJ IDEA Ultimate.app" "goland:GoLand.app")
+caskInstall "${RE_INSTALL_DIC[*]}" true
+
+exit 0
+
+# TODO backup old config files
 ask "Do you want to backup the current config files?" "backup the current files"
 if [[ $? == 1 ]]; then
 	echo "Want Backup"
@@ -235,13 +240,13 @@ fi
 ZSH_ALIAS=$(append ZSH_ALIAS "alias vi='$(command -v nvim)'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias rm='trash'")
 ZSH_ALIAS=$(append ZSH_ALIAS "alias c='clear'")
-echo "$ZSH_ALIAS" > "$ZSH_ALIAS_PATH"
+echo "$ZSH_ALIAS" >"$ZSH_ALIAS_PATH"
 beerEcho "Successful setting zsh alias: $ZSH_ALIAS_PATH"
 
 # VIMRC: $HOME/.config/nvim/init.vim
 NVIM_RC_PATH="$HOME/.config/nvim/init.vim"
 NVIM_RC=$(append NVIM_RC "$NVIM_BASIC")
-echo "$NVIM_RC" > "$NVIM_RC_PATH"
+echo "$NVIM_RC" >"$NVIM_RC_PATH"
 beerEcho "Successful setting nvim config: $NVIM_RC_PATH"
 
 # end of .zshrc
@@ -255,5 +260,5 @@ ZSHRC=$(append ZSHRC "$AUTO_SUGGESTION" true)
 #ZSHRC=$(append ZSHRC "source $HOME/.config/zsh/zsh-source.zsh")
 
 # $HOME/.zshrc
-echo "$ZSHRC" > "$ZSHRC_PATH"
+echo "$ZSHRC" >"$ZSHRC_PATH"
 beerEcho "Successful setting zshrc: $ZSHRC_PATH"
