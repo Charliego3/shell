@@ -101,7 +101,7 @@ function answer() {
 		if [[ $chose == "" ]]; then
 			chose="No"
 		fi
-		warnEcho "You chose don't $chose"
+		warnEcho "You chose $chose"
 		return 0
 	fi
 
@@ -190,7 +190,6 @@ LOCAL_APPLICATIONS=("/Applications" "$HOME/Applications" "$HOME/Applications/Jet
 function caskInstall() {
 	# shellcheck disable=SC2206
 	local APPLICATIONS=($1)
-	local IS_RE_INSTALL=$2
 	for animal in "${APPLICATIONS[@]}"; do
 		KEY=${animal%%:*}
 		VALUE=${animal#*:}
@@ -205,23 +204,25 @@ function caskInstall() {
 
 		if [[ $FINAL_APP_LOCATION == "" ]]; then
 			brew install cask "$KEY"
-		elif $IS_RE_INSTALL ; then
-			trash -vy "$FINAL_APP_LOCATION"
-			KEY_PATH="$(command -v "$KEY")"
-			if [[ "$KEY_PATH" != "" ]]; then
-				trash -vy "$KEY"
+		else
+			if ! ask "Are you want to reinstall $VALUE?" "don't install $VALUE"; then
+				trash -vy "$FINAL_APP_LOCATION"
+				KEY_PATH="$(command -v "$KEY")"
+				if [[ "$KEY_PATH" != "" ]]; then
+					trash -vy "$KEY"
+				fi
+				brew reinstall "$KEY"
 			fi
-			brew reinstall "$KEY"
 		fi
 	done
 }
 
 # if key is exists then not install
 NOT_INSTALL_DIC=("cakebrew:Cakebrew.app" "iina:IINA.app")
-caskInstall "${NOT_INSTALL_DIC[*]}" false
+caskInstall "${NOT_INSTALL_DIC[*]}"
 
 RE_INSTALL_DIC=("webstorm:WebStorm.app" "intellij-idea:IntelliJ IDEA Ultimate.app" "goland:GoLand.app" "datagrip:DataGrip.app")
-caskInstall "${RE_INSTALL_DIC[*]}" true
+caskInstall "${RE_INSTALL_DIC[*]}"
 
 exit 0
 
